@@ -129,16 +129,32 @@ async def start_bots():
     except Exception as ex:
         LOGGER.critical(f"🔥 Bot failed to start: {ex}")
 
-# ─────── Main Runner ───────
 async def main():
-    # Start web server and bot concurrently
+    # 1️⃣ Start web server in background
     web_runner = await start_web_server()
-    await start_bots()
-    # Cleanup when idle ends
+
+    # 2️⃣ Start main bot
+    await ShrutiCHATBOT.start()
+    LOGGER.info(f"🚀 @{ShrutiCHATBOT.username} started")
+
+    # 3️⃣ Import all modules including commands BEFORE idle
+    for module in ALL_MODULES:
+        importlib.import_module("ShrutiCHATBOT.modules." + module)
+    try:
+        import ShrutiCHATBOT.commands
+    except ModuleNotFoundError:
+        LOGGER.warning("No commands.py found")
+
+    # 4️⃣ Set bot commands
+    await ShrutiCHATBOT.set_bot_commands([...])
+
+    # 5️⃣ Start userbot if STRING1
+    if STRING1:
+        await userbot.start()
+
+    # 6️⃣ Idle to keep bot running
+    await idle()
+
+    # 7️⃣ Cleanup
     await web_runner.cleanup()
 
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        LOGGER.info("Bot stopped.")
