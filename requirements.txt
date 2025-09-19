@@ -1,3 +1,4 @@
+aiohttp
 flask
 gunicorn
 Abg==2.3.1
